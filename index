@@ -88,7 +88,7 @@
 </head>
 <body>
   <div class="logo">
-    <img src="https://github.com/maxiosta10/EatViandas/blob/main/logo.png?raw=true" alt="Logo Eat Viandas">
+    <img src="https://github.com/EatViandas/Empresas/blob/main/logo.png?raw=true" alt="Logo Eat Viandas">
   </div>
 
   <form id="pedidoForm" action="https://script.google.com/macros/s/AKfycbwRAgiz9MTTwqoV7DDCSlI5wGhmOwAl1PO-O3_oIOUBZq2xNPgvlAXSeFW6JLHaZJFK/exec" method="POST">
