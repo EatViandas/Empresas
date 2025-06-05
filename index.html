@@ -211,31 +211,49 @@
       }
     }
 
-    async function loadMenuOptions() {
-      try {
-        const response = await fetch('https://script.google.com/macros/s/AKfycbzW37M7Y1PwcxjKpW2Yol1O0WP9_fWRf34T19lNwrRGyElwZnRAgD2AKBmKXeY0P9yCrA/exec');
-        const opciones = await response.json();
-        for (let i = 1; i <= 5; i++) {
-          const select = document.getElementById(`menu${i}`);
-          select.innerHTML = "";
-          if (opciones.length) {
-            opciones.forEach(op => {
-              const opt = document.createElement("option");
-              opt.value = op;
-              opt.textContent = op;
-              select.appendChild(opt);
-            });
-          } else {
-            const none = document.createElement("option");
-            none.value = "";
-            none.textContent = "No hay menús disponibles";
-            select.appendChild(none);
-          }
-        }
-      } catch (e) {
-        console.error('Error al cargar menús:', e);
+     async function loadMenuOptions() {
+    try {
+      // 1) Tomar el valor actual del campo "empresa" (rellenado por applyParams())
+      const empresaInput = document.getElementById("empresa").value || "";
+      const empresa = encodeURIComponent(empresaInput.trim());
+      
+      // 2) Si no hay empresa, no hacemos fetch y dejamos los <select> vacíos
+      if (!empresa) {
+        console.warn("No se encontró valor en #empresa para cargar menús.");
+        return;
       }
+
+      // 3) Construir la URL del Web App con ?empresa=…
+      const webAppBase = 
+        "https://script.google.com/macros/s/AKfycbze0uwY7xNADKMwHGXCdQ3LONnPVEGNRv90y1My1cCqr3b8RnUrgJAeXhcKncfnFXWI2A/exec";
+      const urlConParam = webAppBase + "?empresa=" + empresa;
+
+      // 4) Llamar al Web App y leer el JSON (array de menús)
+      const response = await fetch(urlConParam);
+      const opciones = await response.json();
+
+      // 5) Poblar cada <select id="menu1">…<select id="menu5">
+      for (let i = 1; i <= 5; i++) {
+        const select = document.getElementById(`menu${i}`);
+        select.innerHTML = "";
+        if (opciones.length) {
+          opciones.forEach(op => {
+            const opt = document.createElement("option");
+            opt.value = op;
+            opt.textContent = op;
+            select.appendChild(opt);
+          });
+        } else {
+          const none = document.createElement("option");
+          none.value = "";
+          none.textContent = "No hay menús disponibles para tu cliente";
+          select.appendChild(none);
+        }
+      }
+    } catch (e) {
+      console.error("Error al cargar menús:", e);
     }
+  }
 
     window.addEventListener('DOMContentLoaded', () => {
       initializeDates();
