@@ -175,64 +175,81 @@
   </form>
 
   <script>
-    function getNextMonday() {
-      const today = new Date();
-      const day = today.getDay();
-      const diff = day === 1 ? 0 : (day === 0 ? 1 : 8 - day);
-      today.setDate(today.getDate() + diff);
-      return today;
-    }
+  // 1) Calcula el próximo lunes, no lo tocamos:
+  function getNextMonday() {
+    const today = new Date();
+    const day = today.getDay();
+    const diff = day === 1 ? 0 : (day === 0 ? 1 : 8 - day);
+    today.setDate(today.getDate() + diff);
+    return today;
+  }
 
-    function formatDate(date) {
-      return date.toISOString().split('T')[0];
-    }
+  // 2) Formatea fecha a YYYY-MM-DD, tampoco lo tocamos:
+  function formatDate(date) {
+    return date.toISOString().split('T')[0];
+  }
 
-    function initializeDates() {
-      let monday = getNextMonday();
-      for (let i = 1; i <= 5; i++) {
-        document.getElementById(`dia${i}`).value = formatDate(monday);
-        monday.setDate(monday.getDate() + 1);
-      }
+  // 3) Rellena las fechas en los inputs #dia1 … #dia5
+  function initializeDates() {
+    let monday = getNextMonday();
+    for (let i = 1; i <= 5; i++) {
+      document.getElementById(`dia${i}`).value = formatDate(monday);
+      monday.setDate(monday.getDate() + 1);
     }
+  }
 
-    function getParams() {
-      const params = {};
-      location.search.substr(1).split("&").forEach(item => {
-        const [key, value] = item.split("=");
-        if (key) params[key] = decodeURIComponent(value);
-      });
-      return params;
+  // 4) Extrae parámetros de la URL: ?empresa=…
+  function getParams() {
+    const params = {};
+    // location.search por ejemplo es "?empresa=AGUILAR"
+    location.search.substr(1).split("&").forEach(item => {
+      const [key, value] = item.split("=");
+      if (key) params[key] = decodeURIComponent(value || "");
+    });
+    return params;
+  }
+
+  // 5) Completa el input #empresa si hay parámetro en la URL
+  function applyParams() {
+    const params = getParams();
+    console.log("DEBUG → getParams devuelve:", params); // <<< DBG
+    if (params.empresa) {
+      document.getElementById("empresa").value = params.empresa;
+      console.log("DEBUG → #empresa rellenado con:", params.empresa); // <<< DBG
+    } else {
+      console.warn("DEBUG → No hubo parámetro 'empresa' en la URL.");
     }
+  }
 
-    function applyParams() {
-      const params = getParams();
-      if (params.empresa) {
-        document.getElementById("empresa").value = params.empresa;
-      }
-    }
-
-     async function loadMenuOptions() {
+  // 6) Carga los menús consultando el WebApp con ?empresa=…
+  async function loadMenuOptions() {
     try {
-      // 1) Tomar el valor actual del campo "empresa" (rellenado por applyParams())
+      // Leemos el contenido actual del input #empresa
       const empresaInput = document.getElementById("empresa").value || "";
+      console.log("DEBUG → valor de #empresa leído en JS:", empresaInput); // <<< DBG
+
       const empresa = encodeURIComponent(empresaInput.trim());
-      
-      // 2) Si no hay empresa, no hacemos fetch y dejamos los <select> vacíos
+      console.log("DEBUG → valor de empresa codificado (encodeURIComponent):", empresa); // <<< DBG
+
+      // Si no hay nada en #empresa, salimos sin fetch
       if (!empresa) {
-        console.warn("No se encontró valor en #empresa para cargar menús.");
+        console.warn("DEBUG → campo #empresa vacío, no se hace fetch.");
         return;
       }
 
-      // 3) Construir la URL del Web App con ?empresa=…
+      // Construimos la URL con parámetro
       const webAppBase = 
         "https://script.google.com/macros/s/AKfycbze0uwY7xNADKMwHGXCdQ3LONnPVEGNRv90y1My1cCqr3b8RnUrgJAeXhcKncfnFXWI2A/exec";
       const urlConParam = webAppBase + "?empresa=" + empresa;
+      console.log("DEBUG → URL completa para fetch:", urlConParam); // <<< DBG
 
-      // 4) Llamar al Web App y leer el JSON (array de menús)
+      // Hacemos el fetch
       const response = await fetch(urlConParam);
       const opciones = await response.json();
 
-      // 5) Poblar cada <select id="menu1">…<select id="menu5">
+      console.log("DEBUG → JSON recibido del WebApp:", opciones); // <<< DBG
+
+      // Rellenamos los <select> con id menu1…menu5
       for (let i = 1; i <= 5; i++) {
         const select = document.getElementById(`menu${i}`);
         select.innerHTML = "";
@@ -255,35 +272,35 @@
     }
   }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      initializeDates();
-      applyParams();
-      loadMenuOptions().then(() => {
-        // Solo un bloque abierto a la vez
-        document.querySelectorAll('.bloque .titulo').forEach(t => {
-          t.addEventListener('click', () => {
-            const contenido = t.nextElementSibling;
-            const isOpen = contenido.style.display === 'block';
-            // Cerrar todos
-            document.querySelectorAll('.bloque .contenido').forEach(c => {
-              c.style.display = 'none';
-            });
-            // Si estaba cerrado, abrirlo
-            if (!isOpen) {
-              contenido.style.display = 'block';
-            }
+  // 7) Listener para cuando el DOM ya está listo
+  window.addEventListener("DOMContentLoaded", () => {
+    initializeDates();
+    applyParams();
+    loadMenuOptions().then(() => {
+      // Código para abrir/cerrar bloques, no lo tocamos
+      document.querySelectorAll(".bloque .titulo").forEach(t => {
+        t.addEventListener("click", () => {
+          const contenido = t.nextElementSibling;
+          const isOpen = contenido.style.display === "block";
+          document.querySelectorAll(".bloque .contenido").forEach(c => {
+            c.style.display = "none";
           });
-        });
-
-        // Cambio de texto al enviar
-        const form = document.getElementById('pedidoForm');
-        const btn = document.getElementById('submitBtn');
-        form.addEventListener('submit', () => {
-          btn.textContent = 'Enviando...';
-          btn.disabled = true;
+          if (!isOpen) {
+            contenido.style.display = "block";
+          }
         });
       });
+
+      // Cambiar texto del botón al enviar
+      const form = document.getElementById("pedidoForm");
+      const btn = document.getElementById("submitBtn");
+      form.addEventListener("submit", () => {
+        btn.textContent = "Enviando...";
+        btn.disabled = true;
+      });
     });
-  </script>
+  });
+</script>
+
 </body>
 </html>
