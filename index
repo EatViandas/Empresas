@@ -30,7 +30,10 @@
       font-weight: bold;
       margin: 10px 0 5px;
     }
-    input[type="text"], input[type="date"], input[type="number"], select {
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    select {
       width: 100%;
       padding: 8px;
       margin-bottom: 10px;
@@ -106,6 +109,8 @@
           <select id="menu1" name="menu1" required></select>
           <label for="cantidad1">Cantidad:</label>
           <input type="number" id="cantidad1" name="cantidad1" value="1" readonly>
+          <label for="observacion1">Observación:</label>
+          <input type="text" id="observacion1" name="observacion1" placeholder="Escribe aquí tu observación">
         </div>
       </div>
 
@@ -118,6 +123,8 @@
           <select id="menu2" name="menu2" required></select>
           <label for="cantidad2">Cantidad:</label>
           <input type="number" id="cantidad2" name="cantidad2" value="1" readonly>
+          <label for="observacion2">Observación:</label>
+          <input type="text" id="observacion2" name="observacion2" placeholder="Escribe aquí tu observación">
         </div>
       </div>
 
@@ -130,6 +137,8 @@
           <select id="menu3" name="menu3" required></select>
           <label for="cantidad3">Cantidad:</label>
           <input type="number" id="cantidad3" name="cantidad3" value="1" readonly>
+          <label for="observacion3">Observación:</label>
+          <input type="text" id="observacion3" name="observacion3" placeholder="Escribe aquí tu observación">
         </div>
       </div>
 
@@ -142,6 +151,8 @@
           <select id="menu4" name="menu4" required></select>
           <label for="cantidad4">Cantidad:</label>
           <input type="number" id="cantidad4" name="cantidad4" value="1" readonly>
+          <label for="observacion4">Observación:</label>
+          <input type="text" id="observacion4" name="observacion4" placeholder="Escribe aquí tu observación">
         </div>
       </div>
 
@@ -154,6 +165,8 @@
           <select id="menu5" name="menu5" required></select>
           <label for="cantidad5">Cantidad:</label>
           <input type="number" id="cantidad5" name="cantidad5" value="1" readonly>
+          <label for="observacion5">Observación:</label>
+          <input type="text" id="observacion5" name="observacion5" placeholder="Escribe aquí tu observación">
         </div>
       </div>
 
@@ -207,11 +220,15 @@
           select.innerHTML = "";
           if (opciones.length) {
             opciones.forEach(op => {
-              const opt = document.createElement("option"); opt.value = op; opt.textContent = op;
+              const opt = document.createElement("option");
+              opt.value = op;
+              opt.textContent = op;
               select.appendChild(opt);
             });
           } else {
-            const none = document.createElement("option"); none.value = ""; none.textContent = "No hay menús disponibles";
+            const none = document.createElement("option");
+            none.value = "";
+            none.textContent = "No hay menús disponibles";
             select.appendChild(none);
           }
         }
@@ -224,11 +241,19 @@
       initializeDates();
       applyParams();
       loadMenuOptions().then(() => {
-        // Toggle contenido de cada bloque
+        // Solo un bloque abierto a la vez
         document.querySelectorAll('.bloque .titulo').forEach(t => {
           t.addEventListener('click', () => {
-            const c = t.nextElementSibling;
-            c.style.display = c.style.display === 'block' ? 'none' : 'block';
+            const contenido = t.nextElementSibling;
+            const isOpen = contenido.style.display === 'block';
+            // Cerrar todos
+            document.querySelectorAll('.bloque .contenido').forEach(c => {
+              c.style.display = 'none';
+            });
+            // Si estaba cerrado, abrirlo
+            if (!isOpen) {
+              contenido.style.display = 'block';
+            }
           });
         });
 
