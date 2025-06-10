@@ -201,122 +201,110 @@
   </form>
 
   <script>
-    // Mapeo de descripciones diarias (rellenar con tus valores)
-    const dailyOverrides = {
-      M1: [
-        "Milanesa con puré",               // Lunes
-        "Ensalada de papa",                // Martes
-        "Milanesa con ensalada mixta",     // Miércoles
-        "Milanesa con arroz integral",     // Jueves
-        "Milanesa con verduras grilladas"  // Viernes
-      ],
-      M2: [
-        "Pollo grill con papas",
-        "Pollo grill con César",
-        "Pollo grill con quinoa",
-        "Pollo grill con vegetales",
-        "Pollo grill con puré de calabaza"
-      ]
-      // Añadir más códigos si es necesario
-    };
+  function getNextMonday() {
+    const today = new Date();
+    const day = today.getDay();
+    const diff = day === 1 ? 0 : (day === 0 ? 1 : 8 - day);
+    today.setDate(today.getDate() + diff);
+    return today;
+  }
 
-    function getNextMonday() {
-      const today = new Date();
-      const day = today.getDay();
-      const diff = day === 1 ? 0 : (day === 0 ? 1 : 8 - day);
-      today.setDate(today.getDate() + diff);
-      return today;
+  function formatDate(d) {
+    return d.toISOString().split("T")[0];
+  }
+
+  function initializeDates() {
+    let monday = getNextMonday();
+    for (let i = 1; i <= 5; i++) {
+      document.getElementById(`dia${i}`).value = formatDate(monday);
+      monday.setDate(monday.getDate() + 1);
     }
-    function formatDate(date) {
-      return date.toISOString().split('T')[0];
-    }
-    function initializeDates() {
-      let monday = getNextMonday();
-      for (let i = 1; i <= 5; i++) {
-        document.getElementById(`dia${i}`).value = formatDate(monday);
-        monday.setDate(monday.getDate() + 1);
-      }
-    }
-    function getParams() {
-      const params = {};
-      location.search.substr(1).split("&").forEach(item => {
-        const [key, value] = item.split("=");
-        if (key) params[key] = decodeURIComponent(value || "");
+  }
+
+  function getParams() {
+    const p = {};
+    location.search
+      .substr(1)
+      .split("&")
+      .forEach(item => {
+        const [k, v] = item.split("=");
+        if (k) p[k] = decodeURIComponent(v || "");
       });
-      return params;
-    }
-    function applyParams() {
-      const params = getParams();
-      if (params.empresa) {
-        document.getElementById("empresa").value = params.empresa;
-      }
-    }
+    return p;
+  }
 
-    // Carga dinámicamente los menús y sus IDs, aplicando overrides diarios
-    async function loadMenuForDay(dayIndex) {
-      const empresaInput = document.getElementById("empresa").value.trim();
-      if (!empresaInput) return;
-      const empresa = encodeURIComponent(empresaInput);
-      const webAppBase = 
-        "https://script.google.com/macros/s/AKfycbyCfH1NM8yrlUuUI6-SD3rHvh6DWl8NoE-95EWTx838mum7mF-A9VB-0Kw-H4ZjUdtfbQ/exec";
-      const url = `${webAppBase}?empresa=${empresa}&day=${dayIndex}`;
+  function applyParams() {
+    const { empresa } = getParams();
+    if (empresa) {
+      document.getElementById("empresa").value = empresa;
+    }
+  }
+
+  // -----------------------------
+  // Nuevo loadMenuForDay dinámico
+  // -----------------------------
+  async function loadMenuForDay(dayIndex) {
+    const empresa = encodeURIComponent(
+      document.getElementById("empresa").value.trim()
+    );
+    if (!empresa) return;
+
+    // Llama a tu doGet con empresa + day
+    const webAppBase =
+      "https://script.google.com/macros/s/AKfycbyKAEYlie1TQ1XI1urEJJtr1DcT_uLU48NpuTk-I1jdX_3qHpI0je7n7_8w922xYeauoA/exec";
+    const url = `${webAppBase}?empresa=${empresa}&day=${dayIndex}`;
+
+    try {
       const res = await fetch(url);
-      let opciones = await res.json();
-
-      // Aplicar override si existe para ese código
-      opciones = opciones.map(o => {
-        const parts = o.split("|").map(s => s.trim());
-        const code = parts[0];
-        if (dailyOverrides[code]) {
-          return `${code} | ${dailyOverrides[code][dayIndex - 1]}`;
-        }
-        return o;
-      });
-
+      const opciones = await res.json();
       const select = document.getElementById(`menu${dayIndex}`);
-      select.innerHTML = "";
-      opciones.forEach(o => {
-        const opt = document.createElement("option");
-        opt.value = o;
-        opt.textContent = o;
-        select.appendChild(opt);
-      });
+      select.innerHTML = opciones.length
+        ? opciones.map(o => `<option value="${o}">${o}</option>`).join("")
+        : `<option value="">No hay menús disponibles</option>`;
 
-      // Hidden para el ID puro
+      // Actualiza el hidden con el ID puro
       const hidden = document.getElementById(`menu${dayIndex}_id`);
       const updateId = () => {
         const val = select.value.split("|")[0].trim();
         hidden.value = val;
       };
       select.addEventListener("change", updateId);
+      // Inicializarlo al cargar
       updateId();
+
+    } catch (err) {
+      console.error("Error cargando menús día " + dayIndex, err);
+    }
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    initializeDates();
+    applyParams();
+
+    // Carga para cada día
+    for (let i = 1; i <= 5; i++) {
+      loadMenuForDay(i);
     }
 
-    window.addEventListener("DOMContentLoaded", () => {
-      initializeDates();
-      applyParams();
-      for (let i = 1; i <= 5; i++) {
-        loadMenuForDay(i);
-      }
-
-      // Toggle secciones
-      document.querySelectorAll(".bloque .titulo").forEach(t => {
-        t.addEventListener("click", () => {
-          const c = t.nextElementSibling;
-          document.querySelectorAll(".bloque .contenido").forEach(x => x.style.display = "none");
-          c.style.display = c.style.display === "block" ? "none" : "block";
-        });
-      });
-
-      // Cambio de texto al enviar
-      const form = document.getElementById("pedidoForm");
-      const btn = document.getElementById("submitBtn");
-      form.addEventListener("submit", () => {
-        btn.textContent = "Enviando...";
-        btn.disabled = true;
+    // Toggle bloques
+    document.querySelectorAll(".bloque .titulo").forEach(t => {
+      t.addEventListener("click", () => {
+        document.querySelectorAll(".bloque .contenido").forEach(c => (c.style.display = "none"));
+        const c = t.nextElementSibling;
+        c.style.display = c.style.display === "block" ? "none" : "block";
       });
     });
-  </script>
+
+    // Envío
+    const form = document.getElementById("pedidoForm");
+    const btn  = document.getElementById("submitBtn");
+    form.addEventListener("submit", () => {
+      btn.textContent = "Enviando...";
+      btn.disabled = true;
+    });
+  });
+</script>
+
 </body>
 </html>
 
