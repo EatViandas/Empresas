@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eat Viandas - Pedido</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fa;
+      padding: 20px;
+      margin: 0;
+      text-align: center;
+    }
+    .logo img {
+      width: 200px;
+      margin-bottom: 20px;
+    }
+    .form-container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin: 10px 0 5px;
+    }
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    input[readonly] {
+      background-color: #e9ecef;
+      cursor: not-allowed;
+    }
+    .bloque {
+      background: #f5f3eb; /* beige claro */
+      margin: 10px 0;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .titulo {
+      background-color: #d8e2c4; /* verde beige suave */
+      color: #333;
+      padding: 15px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .contenido {
+      display: none;
+      padding: 15px;
+    }
+    button {
+      background-color: #000;
+      color: #fff;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      width: 100%;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #333;
+    }
+    @media (max-width: 600px) {
+      .form-container {
+        padding: 15px;
+        margin: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <img src="https://github.com/EatViandas/Empresas/blob/main/logo.png?raw=true" alt="Logo Eat Viandas">
+  </div>
+
+  <form id="pedidoForm" action="https://script.google.com/macros/s/AKfycbzcOzjYLgLk9fkRkFQO5Eu1cvivqrIlAnUSonhDjaAESLtfVggeHfMOXx_-gEe1jyeq/exec" method="POST">
+    <div class="form-container">
+      <label for="empresa">Empresa:</label>
+      <input type="text" id="empresa" name="empresa" required>
+
+      <label for="nombre">Nombre:</label>
+      <input type="text" id="nombre" name="nombre" required>
+
+      <!-- Bloques por día de lunes a viernes -->
+      <div class="bloque">
+        <div class="titulo">Lunes</div>
+        <div class="contenido">
+          <label for="dia1">Fecha:</label>
+          <input type="date" id="dia1" name="dia1" readonly>
+          <label for="menu1">Menú:</label>
+          <select id="menu1" name="menu1" required></select>
+          <label for="cantidad1">Cantidad:</label>
+          <input type="number" id="cantidad1" name="cantidad1" value="1" readonly>
+          <label for="observacion1">Observación:</label>
+          <input type="text" id="observacion1" name="observacion1" placeholder="Escribe aquí tu observación">
+        </div>
+      </div>
+
+      <div class="bloque">
+        <div class="titulo">Martes</div>
+        <div class="contenido">
+          <label for="dia2">Fecha:</label>
+          <input type="date" id="dia2" name="dia2" readonly>
+          <label for="menu2">Menú:</label>
+          <select id="menu2" name="menu2" required></select>
+          <label for="cantidad2">Cantidad:</label>
+          <input type="number" id="cantidad2" name="cantidad2" value="1" readonly>
+          <label for="observacion2">Observación:</label>
+          <input type="text" id="observacion2" name="observacion2" placeholder="Escribe aquí tu observación">
+        </div>
+      </div>
+
+      <div class="bloque">
+        <div class="titulo">Miércoles</div>
+        <div class="contenido">
+          <label for="dia3">Fecha:</label>
+          <input type="date" id="dia3" name="dia3" readonly>
+          <label for="menu3">Menú:</label>
+          <select id="menu3" name="menu3" required></select>
+          <label for="cantidad3">Cantidad:</label>
+          <input type="number" id="cantidad3" name="cantidad3" value="1" readonly>
+          <label for="observacion3">Observación:</label>
+          <input type="text" id="observacion3" name="observacion3" placeholder="Escribe aquí tu observación">
+        </div>
+      </div>
+
+      <div class="bloque">
+        <div class="titulo">Jueves</div>
+        <div class="contenido">
+          <label for="dia4">Fecha:</label>
+          <input type="date" id="dia4" name="dia4" readonly>
+          <label for="menu4">Menú:</label>
+          <select id="menu4" name="menu4" required></select>
+          <label for="cantidad4">Cantidad:</label>
+          <input type="number" id="cantidad4" name="cantidad4" value="1" readonly>
+          <label for="observacion4">Observación:</label>
+          <input type="text" id="observacion4" name="observacion4" placeholder="Escribe aquí tu observación">
+        </div>
+      </div>
+
+      <div class="bloque">
+        <div class="titulo">Viernes</div>
+        <div class="contenido">
+          <label for="dia5">Fecha:</label>
+          <input type="date" id="dia5" name="dia5" readonly>
+          <label for="menu5">Menú:</label>
+          <select id="menu5" name="menu5" required></select>
+          <label for="cantidad5">Cantidad:</label>
+          <input type="number" id="cantidad5" name="cantidad5" value="1" readonly>
+          <label for="observacion5">Observación:</label>
+          <input type="text" id="observacion5" name="observacion5" placeholder="Escribe aquí tu observación">
+        </div>
+      </div>
+
+      <button type="submit" id="submitBtn">Enviar Pedido</button>
+    </div>
+  </form>
+
+  <script>
+
+  
+    
+  // 1) Calcula el próximo lunes, no lo tocamos:
+  function getNextMonday() {
+    const today = new Date();
+    const day = today.getDay();
+    const diff = day === 1 ? 0 : (day === 0 ? 1 : 8 - day);
+    today.setDate(today.getDate() + diff);
+    return today;
+  }
+
+  // 2) Formatea fecha a YYYY-MM-DD, tampoco lo tocamos:
+  function formatDate(date) {
+    return date.toISOString().split('T')[0];
+  }
+
+  // 3) Rellena las fechas en los inputs #dia1 … #dia5
+  function initializeDates() {
+    let monday = getNextMonday();
+    for (let i = 1; i <= 5; i++) {
+      document.getElementById(`dia${i}`).value = formatDate(monday);
+      monday.setDate(monday.getDate() + 1);
+    }
+  }
+
+  // 4) Extrae parámetros de la URL: ?empresa=…
+  function getParams() {
+    const params = {};
+    // location.search por ejemplo es "?empresa=AGUILAR"
+    location.search.substr(1).split("&").forEach(item => {
+      const [key, value] = item.split("=");
+      if (key) params[key] = decodeURIComponent(value || "");
+    });
+    return params;
+  }
+
+  // 5) Completa el input #empresa si hay parámetro en la URL
+  function applyParams() {
+    const params = getParams();
+    console.log("DEBUG → getParams devuelve:", params); // <<< DBG
+    if (params.empresa) {
+      document.getElementById("empresa").value = params.empresa;
+      console.log("DEBUG → #empresa rellenado con:", params.empresa); // <<< DBG
+    } else {
+      console.warn("DEBUG → No hubo parámetro 'empresa' en la URL.");
+    }
+  }
+
+  // 6) Carga los menús consultando el WebApp con ?empresa=…
+  async function loadMenuOptions() {
+    try {
+      // Leemos el contenido actual del input #empresa
+      const empresaInput = document.getElementById("empresa").value || "";
+      console.log("DEBUG → valor de #empresa leído en JS:", empresaInput); // <<< DBG
+
+      const empresa = encodeURIComponent(empresaInput.trim());
+      console.log("DEBUG → valor de empresa codificado (encodeURIComponent):", empresa); // <<< DBG
+
+      // Si no hay nada en #empresa, salimos sin fetch
+      if (!empresa) {
+        console.warn("DEBUG → campo #empresa vacío, no se hace fetch.");
+        return;
+      }
+
+      // Construimos la URL con parámetro
+      const webAppBase = 
+        "https://script.google.com/macros/s/AKfycbyKAEYlie1TQ1XI1urEJJtr1DcT_uLU48NpuTk-I1jdX_3qHpI0je7n7_8w922xYeauoA/exec";
+      const urlConParam = webAppBase + "?empresa=" + empresa;
+      console.log("DEBUG → URL completa para fetch:", urlConParam); // <<< DBG
+
+      // Hacemos el fetch
+      const response = await fetch(urlConParam);
+      const opciones = await response.json();
+
+      console.log("DEBUG → JSON recibido del WebApp:", opciones); // <<< DBG
+
+      // Rellenamos los <select> con id menu1…menu5
+      for (let i = 1; i <= 5; i++) {
+        const select = document.getElementById(`menu${i}`);
+        select.innerHTML = "";
+        if (opciones.length) {
+          opciones.forEach(op => {
+            const opt = document.createElement("option");
+            opt.value = op;
+            opt.textContent = op;
+            select.appendChild(opt);
+          });
+        } else {
+          const none = document.createElement("option");
+          none.value = "";
+          none.textContent = "No hay menús disponibles para tu cliente";
+          select.appendChild(none);
+        }
+      }
+    } catch (e) {
+      console.error("Error al cargar menús:", e);
+    }
+  }
+
+  // 7) Listener para cuando el DOM ya está listo
+  window.addEventListener("DOMContentLoaded", () => {
+    initializeDates();
+    applyParams();
+    loadMenuOptions().then(() => {
+      // Código para abrir/cerrar bloques, no lo tocamos
+      document.querySelectorAll(".bloque .titulo").forEach(t => {
+        t.addEventListener("click", () => {
+          const contenido = t.nextElementSibling;
+          const isOpen = contenido.style.display === "block";
+          document.querySelectorAll(".bloque .contenido").forEach(c => {
+            c.style.display = "none";
+          });
+          if (!isOpen) {
+            contenido.style.display = "block";
+          }
+        });
+      });
+
+      // Cambiar texto del botón al enviar
+      const form = document.getElementById("pedidoForm");
+      const btn = document.getElementById("submitBtn");
+      form.addEventListener("submit", () => {
+        btn.textContent = "Enviando...";
+        btn.disabled = true;
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
