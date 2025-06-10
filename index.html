@@ -258,7 +258,7 @@
       if (!empresaInput) return;
       const empresa = encodeURIComponent(empresaInput);
       const webAppBase = 
-        "https://script.google.com/macros/s/AKfycbyKAEYlie1TQ1XI1urEJJtr1DcT_uLU48NpuTk-I1jdX_3qHpI0je7n7_8w922xYeauoA/exec";
+        "https://script.google.com/macros/s/AKfycbyCfH1NM8yrlUuUI6-SD3rHvh6DWl8NoE-95EWTx838mum7mF-A9VB-0Kw-H4ZjUdtfbQ/exec";
       const url = `${webAppBase}?empresa=${empresa}&day=${dayIndex}`;
       const res = await fetch(url);
       let opciones = await res.json();
