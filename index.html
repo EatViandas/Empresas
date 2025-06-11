@@ -179,7 +179,7 @@
     async function loadMenuForDay(dayIndex) {
       const empresa = encodeURIComponent(document.getElementById("empresa").value.trim());
       if (!empresa) return;
-      const webApp = "https://script.google.com/macros/s/AKfycbxb21ARS_QciqLS0bXUTqGjS5ztN836OKQjLTFnkRFwvy9-UE2TSOa8EVwjEUsWySleZw/exec";
+      const webApp = "https://script.google.com/macros/s/AKfycbyO619BWJ350XRJYgqVkOHHPkkptoI4YeAj1MTGg1O6y9MAQH35MdOJRcJEUgMb2GWybA/exec";
       const res = await fetch(`${webApp}?empresa=${empresa}&day=${dayIndex}`);
       const opciones = await res.json();
 
