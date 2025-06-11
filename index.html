@@ -5,20 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Eat Viandas - Pedido</title>
   <style>
-    body { font-family: Arial; background:#f8f9fa; padding:20px; margin:0; text-align:center; }
-    .logo img { width:200px; margin-bottom:20px; }
-    .form-container { background:#fff; padding:20px; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1); max-width:900px; margin:0 auto; text-align:left; }
-    label { display:block; font-weight:bold; margin:10px 0 5px; }
+    body { font-family: Arial, sans-serif; background: #f8f9fa; padding: 20px; margin: 0; text-align: center; }
+    .logo img { width: 200px; margin-bottom: 20px; }
+    .form-container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 900px; margin: 0 auto; text-align: left; }
+    label { display: block; font-weight: bold; margin: 10px 0 5px; }
     input[type="text"], input[type="date"], input[type="number"], select {
-      width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:5px; box-sizing:border-box;
+      width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;
     }
-    input[readonly] { background:#e9ecef; cursor:not-allowed; }
-    .bloque { background:#f5f3eb; margin:10px 0; border-radius:8px; overflow:hidden; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
-    .titulo { background:#d8e2c4; padding:15px; cursor:pointer; user-select:none; }
-    .contenido { display:none; padding:15px; }
-    button { background:#000; color:#fff; padding:10px; border:none; border-radius:5px; width:100%; font-size:16px; cursor:pointer; margin-top:20px; font-weight:bold; }
-    button:hover { background:#333; }
-    @media(max-width:600px){ .form-container{padding:15px;margin:10px;} }
+    input[readonly] { background: #e9ecef; cursor: not-allowed; }
+    .bloque { background: #f5f3eb; margin: 10px 0; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .titulo { background: #d8e2c4; padding: 15px; cursor: pointer; user-select: none; }
+    .contenido { display: none; padding: 15px; }
+    button { background: #000; color: #fff; padding: 10px; border: none; border-radius: 5px; width: 100%; font-size: 16px; cursor: pointer; margin-top: 20px; font-weight: bold; }
+    button:hover { background: #333; }
+    @media(max-width:600px) { .form-container { padding:15px; margin:10px; } }
   </style>
 </head>
 <body>
@@ -27,7 +27,7 @@
   </div>
 
   <form id="pedidoForm"
-        action="https://script.google.com/macros/s/AKfycbzlXl9jdfLNEP8z7GuhTG9gDVphFkJXVJZLSy_OvSQ2U0wJQrIeXFTCNsxNax4vrqkZWA/exec"
+        action="https://script.google.com/macros/s/AKfycbyWthfRAPb3CKxob5p0gqWBELMu19yg_LCS8U9wy-kyeHpz50ciiOQfHqEt4QIUMfmX/exec"
         method="POST">
     <div class="form-container">
       <label for="empresa">Empresa:</label>
@@ -136,94 +136,57 @@
   </form>
 
   <script>
-    function getNextMonday() {
-      const t = new Date(), d = t.getDay(), diff = d===1?0:(d===0?1:8-d);
-      t.setDate(t.getDate()+diff);
-      return t;
-    }
-    function formatDate(d) { return d.toISOString().split("T")[0]; }
-    function initializeDates() {
-      let m = getNextMonday();
-      for (let i=1; i<=5; i++){
-        document.getElementById(`dia${i}`).value = formatDate(m);
-        m.setDate(m.getDate()+1);
-      }
-    }
+    // Fechas
+    function getNextMonday(){const t=new Date(),d=t.getDay(),diff=d===1?0:(d===0?1:8-d);t.setDate(t.getDate()+diff);return t;}
+    function formatDate(d){return d.toISOString().split("T")[0];}
+    function initializeDates(){let m=getNextMonday();for(let i=1;i<=5;i++){document.getElementById(`dia${i}`).value=formatDate(m);m.setDate(m.getDate()+1);} }
 
-    function getParams() {
-      const p={}, parts=location.search.substr(1).split("&");
-      parts.forEach(item => {
-        const [k,v]=item.split("=");
-        if(k) p[k]=decodeURIComponent(v||"");
-      });
-      return p;
-    }
-    function applyParams() {
-      const {empresa} = getParams();
-      if (empresa) document.getElementById("empresa").value = empresa;
-    }
+    // URL params
+    function getParams(){const p={},parts=location.search.substr(1).split("&");parts.forEach(item=>{const[k,v]=item.split("=");if(k)p[k]=decodeURIComponent(v||"")});return p;}
+    function applyParams(){const{empresa}=getParams();if(empresa)document.getElementById("empresa").value=empresa;}
 
-    async function fetchAllowedDays(empresa) {
-      const url = 
-        "https://script.google.com/macros/s/AKfycbw7KQneNgoc9kMzvZ1y2KUXwWcHCjoyvwT_GFks6hugAEwvd6Mg7keRY1dsWXRLWSZk2A/exec?empresa="
-        + encodeURIComponent(empresa);
-      const res = await fetch(url);
-      const days = await res.json(); // e.g. ["Lunes","Martes"]
-      const map = { Lunes:1, Martes:2, 'Miércoles':3, Jueves:4, Viernes:5 };
-      return days.map(d=>map[d]).filter(n=>n);
-    }
-
-    async function loadMenuForDay(dayIndex) {
-      const empresa = encodeURIComponent(document.getElementById("empresa").value.trim());
-      if (!empresa) return;
-      const url = 
-        "https://script.google.com/macros/s/AKfycbyWthfRAPb3CKxob5p0gqWBELMu19yg_LCS8U9wy-kyeHpz50ciiOQfHqEt4QIUMfmX/exec"
-        + "?empresa=" + empresa + "&day=" + dayIndex;
-      const res = await fetch(url);
-      const options = await res.json();
-
-      const sel = document.getElementById(`menu${dayIndex}`);
-      sel.innerHTML = options.map(o=>`<option value="${o}">${o}</option>`).join("")
-                     || `<option value="">No hay menús disponibles</option>`;
-
-      const hid = document.getElementById(`menu${dayIndex}_id`);
-      const upd = () => hid.value = sel.value.split("|")[0].trim();
-      sel.addEventListener("change", upd);
-      upd();
-    }
-
-    window.addEventListener("DOMContentLoaded", async () => {
+    // Carga días permitidos y menús
+    async function init(){
       initializeDates();
       applyParams();
+      const empresa=document.getElementById("empresa").value.trim();
+      if(!empresa) return;
 
-      const empresa = document.getElementById("empresa").value.trim();
-      const allowed = await fetchAllowedDays(empresa);
+      // Llamada única al endpoint unificado
+      const url=`https://script.google.com/macros/s/AKfycbzavwPRU_QfjKKASe4UDt0_kOFgAZav4bSduZ_q9U8c6FrPuumt3t60BdVlpU8TWU0mOQ/exec?empresa=${encodeURIComponent(empresa)}`;
+      const res=await fetch(url);
+      const {days, menus}=await res.json(); // days=[1,2,4], menus is object: {1:[...],2:[...],...}
 
-      const dayNames = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
-      for (let i=1; i<=5; i++){
-        const blk = document.getElementById(`bloque${i}`);
-        if (allowed.includes(i)) {
-          blk.style.display = "";
-          loadMenuForDay(i);
+      // Mostrar/ocultar bloques y poblar selects
+      for(let i=1;i<=5;i++){
+        const blk=document.getElementById(`bloque${i}`);
+        if(days.includes(i)){
+          blk.style.display="";
+          const sel=document.getElementById(`menu${i}`);
+          const opts=menus[i]||[];
+          sel.innerHTML=opts.map(o=>`<option value="${o}">${o}</option>`).join("")||`<option value="">No hay menús</option>`;
+          const hid=document.getElementById(`menu${i}_id`);
+          const upd=()=>hid.value=sel.value.split("|")[0].trim();
+          sel.addEventListener("change",upd);
+          upd();
         } else {
-          blk.style.display = "none";
+          blk.style.display="none";
         }
       }
 
-      document.querySelectorAll(".bloque .titulo").forEach(t => {
-        t.addEventListener("click", () => {
-          document.querySelectorAll(".bloque .contenido").forEach(c=>c.style.display="none");
-          const c = t.nextElementSibling;
-          c.style.display = c.style.display==="block"?"none":"block";
-        });
-      });
+      // Toggle
+      document.querySelectorAll(".bloque .titulo").forEach(t=>t.addEventListener("click",()=>{
+        document.querySelectorAll(".bloque .contenido").forEach(c=>c.style.display="none");
+        const c=t.nextElementSibling;
+        c.style.display=c.style.display==="block"?"none":"block";
+      }));
 
-      const form = document.getElementById("pedidoForm"), btn = document.getElementById("submitBtn");
-      form.addEventListener("submit", ()=>{
-        btn.textContent="Enviando...";
-        btn.disabled=true;
-      });
-    });
+      // Submit feedback
+      const form=document.getElementById("pedidoForm"), btn=document.getElementById("submitBtn");
+      form.addEventListener("submit",()=>{btn.textContent="Enviando...";btn.disabled=true;});
+    }
+
+    window.addEventListener("DOMContentLoaded",init);
   </script>
 </body>
 </html>
