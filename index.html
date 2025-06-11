@@ -200,110 +200,106 @@
     </div>
   </form>
 
-  <script>
+<script>
+  // 1) Cálculo de fechas
   function getNextMonday() {
-    const today = new Date();
-    const day = today.getDay();
-    const diff = day === 1 ? 0 : (day === 0 ? 1 : 8 - day);
-    today.setDate(today.getDate() + diff);
-    return today;
+    const t = new Date(), d = t.getDay(), diff = d===1?0:(d===0?1:8-d);
+    t.setDate(t.getDate()+diff);
+    return t;
   }
-
-  function formatDate(d) {
-    return d.toISOString().split("T")[0];
-  }
-
+  function formatDate(d) { return d.toISOString().split("T")[0]; }
   function initializeDates() {
-    let monday = getNextMonday();
+    let m = getNextMonday();
     for (let i = 1; i <= 5; i++) {
-      document.getElementById(`dia${i}`).value = formatDate(monday);
-      monday.setDate(monday.getDate() + 1);
+      document.getElementById(`dia${i}`).value = formatDate(m);
+      m.setDate(m.getDate()+1);
     }
   }
 
+  // 2) Leer params de la URL
   function getParams() {
-    const p = {};
-    location.search
-      .substr(1)
-      .split("&")
-      .forEach(item => {
-        const [k, v] = item.split("=");
-        if (k) p[k] = decodeURIComponent(v || "");
-      });
+    const p={}, parts=location.search.substr(1).split("&");
+    parts.forEach(item=>{
+      const [k,v]=item.split("=");
+      if(k) p[k]=decodeURIComponent(v||"");
+    });
     return p;
   }
-
   function applyParams() {
-    const { empresa } = getParams();
-    if (empresa) {
-      document.getElementById("empresa").value = empresa;
-    }
+    const {empresa} = getParams();
+    if (empresa) document.getElementById("empresa").value = empresa;
   }
 
-  // -----------------------------
-  // Nuevo loadMenuForDay dinámico
-  // -----------------------------
+  // 3) Endpoint que devuelve los días permitidos: ["Lunes","Martes",...]
+  async function fetchAllowedDays(empresa) {
+    const url = 
+      "https://script.google.com/macros/s/AKfycbze0uwY7xNADKMwHGXCdQ3LONnPVEGNRv90y1My1cCqr3b8RnUrgJAeXhcKncfnFXWI2A/execDays"
+      + "?empresa=" + encodeURIComponent(empresa);
+    const res = await fetch(url);
+    return await res.json(); 
+  }
+
+  // 4) Carga menú dinámico para un día concreto
   async function loadMenuForDay(dayIndex) {
-    const empresa = encodeURIComponent(
-      document.getElementById("empresa").value.trim()
-    );
+    const empresa = encodeURIComponent(document.getElementById("empresa").value.trim());
     if (!empresa) return;
+    const webApp = "https://script.google.com/macros/s/AKfycbyAiNQSAcOIHCrlfyxl_v_w2Q8UC0MivWYrVr4tqrhIZb213Ymn9wGgf9lOw1PCtUfEAg/exec";
+    const res    = await fetch(`${webApp}?empresa=${empresa}&day=${dayIndex}`);
+    const opciones = await res.json();
 
-    // Llama a tu doGet con empresa + day
-    const webAppBase =
-      "https://script.google.com/macros/s/AKfycbzlXl9jdfLNEP8z7GuhTG9gDVphFkJXVJZLSy_OvSQ2U0wJQrIeXFTCNsxNax4vrqkZWA/exec";
-    const url = `${webAppBase}?empresa=${empresa}&day=${dayIndex}`;
+    const sel = document.getElementById(`menu${dayIndex}`);
+    sel.innerHTML = opciones.length
+      ? opciones.map(o=>`<option value="${o}">${o}</option>`).join("")
+      : `<option value="">No hay menús disponibles</option>`;
 
-    try {
-      const res = await fetch(url);
-      const opciones = await res.json();
-      const select = document.getElementById(`menu${dayIndex}`);
-      select.innerHTML = opciones.length
-        ? opciones.map(o => `<option value="${o}">${o}</option>`).join("")
-        : `<option value="">No hay menús disponibles</option>`;
-
-      // Actualiza el hidden con el ID puro
-      const hidden = document.getElementById(`menu${dayIndex}_id`);
-      const updateId = () => {
-        const val = select.value.split("|")[0].trim();
-        hidden.value = val;
-      };
-      select.addEventListener("change", updateId);
-      // Inicializarlo al cargar
-      updateId();
-
-    } catch (err) {
-      console.error("Error cargando menús día " + dayIndex, err);
-    }
+    // actualizar hidden
+    const hid = document.getElementById(`menu${dayIndex}_id`);
+    const upd = ()=> hid.value = sel.value.split("|")[0].trim();
+    sel.addEventListener("change", upd);
+    upd();
   }
 
-  window.addEventListener("DOMContentLoaded", () => {
+  // 5) Inicialización al cargar la página
+  window.addEventListener("DOMContentLoaded", async () => {
     initializeDates();
     applyParams();
 
-    // Carga para cada día
+    const empresa = document.getElementById("empresa").value.trim();
+    const allowedLabels = await fetchAllowedDays(empresa);
+    // mapeo de nombre de día → índice de bloque
+    const mapDay = { Lunes:1, Martes:2, Miércoles:3, Jueves:4, Viernes:5 };
+
     for (let i = 1; i <= 5; i++) {
-      loadMenuForDay(i);
+      const bloque = document.getElementById(`bloque${i}`);
+      // mostrar solo si ese día está en allowedLabels
+      const dayName = Object.keys(mapDay).find(k=>mapDay[k]===i);
+      if (allowedLabels.includes(dayName)) {
+        bloque.style.display = "";
+        loadMenuForDay(i);
+      } else {
+        bloque.style.display = "none";
+      }
     }
 
-    // Toggle bloques
-    document.querySelectorAll(".bloque .titulo").forEach(t => {
+    // toggle contenido
+    document.querySelectorAll(".bloque .titulo").forEach(t=>{
       t.addEventListener("click", () => {
-        document.querySelectorAll(".bloque .contenido").forEach(c => (c.style.display = "none"));
         const c = t.nextElementSibling;
-        c.style.display = c.style.display === "block" ? "none" : "block";
+        document.querySelectorAll(".bloque .contenido").forEach(x=>x.style.display="none");
+        c.style.display = c.style.display==="block" ? "none" : "block";
       });
     });
 
-    // Envío
+    // feedback de envío
     const form = document.getElementById("pedidoForm");
     const btn  = document.getElementById("submitBtn");
-    form.addEventListener("submit", () => {
+    form.addEventListener("submit", ()=>{
       btn.textContent = "Enviando...";
       btn.disabled = true;
     });
   });
 </script>
+
 
 </body>
 </html>
