@@ -92,7 +92,7 @@
   </div>
 
   <form id="pedidoForm"
-        action="https://script.google.com/macros/s/AKfycbyWthfRAPb3CKxob5p0gqWBELMu19yg_LCS8U9wy-kyeHpz50ciiOQfHqEt4QIUMfmX/exec"
+        action="https://script.google.com/macros/s/AKfycbx2Jd6nRLWkM4nWqL8gTDGrgek0PAuvm5rJfG9VB2Md4bLA6jUaM3J-6NtNlDgfe-Xo/exec"
         method="POST">
     <div class="form-container">
       <label for="empresa">Empresa:</label>
@@ -248,25 +248,33 @@
 
   // 1) Carga la lista de días habilitados para este cliente
   async function loadAllowedDays() {
-    const empresa = document.getElementById("empresa").value.trim();
-    if (!empresa) return [];
-    const url = `${webAppBase}?empresa=${encodeURIComponent(empresa)}&getWeekDays=true`;
-    try {
-      const res = await fetch(url);
-      const dias = await res.json();      // e.g. ["Lunes","Miércoles","Viernes"]
-      // Oculta bloques no permitidos
-      document.querySelectorAll(".bloque").forEach(bloque => {
-        const titulo = bloque.querySelector(".titulo").textContent.trim();
-        if (!dias.includes(titulo)) {
-          bloque.style.display = "none";
-        }
-      });
-      return dias;
-    } catch (err) {
-      console.error("Error cargando días:", err);
-      return [];
-    }
+  const empresa = document.getElementById("empresa").value.trim();
+  if (!empresa) return [];
+  const url = `${webAppBase}?empresa=${encodeURIComponent(empresa)}&getWeekDays=true`;
+  try {
+    const res = await fetch(url);
+    const dias = await res.json(); // e.g. ["Lunes","Miércoles","Viernes"]
+
+    // Oculta y deshabilita bloques no permitidos
+    document.querySelectorAll(".bloque").forEach(bloque => {
+      const titulo = bloque.querySelector(".titulo").textContent.trim();
+      if (!dias.includes(titulo)) {
+        bloque.style.display = "none";
+        // Deshabilitar inputs y selects dentro del bloque
+        bloque.querySelectorAll("input, select").forEach(el => {
+          el.disabled = true;
+          if (el.required) el.required = false;
+        });
+      }
+    });
+
+    return dias;
+  } catch (err) {
+    console.error("Error cargando días:", err);
+    return [];
   }
+}
+
 
   // 2) Carga menús día a día solo en bloques visibles
   async function loadMenusVisibleDays() {
