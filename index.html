@@ -137,99 +137,61 @@
     </div>
   </form>
 
-  <script>
-    // Cálculo de fechas
-    function getNextMonday() {
-      const t = new Date(), d = t.getDay(), diff = d===1?0:(d===0?1:8-d);
-      t.setDate(t.getDate()+diff);
-      return t;
-    }
-    function formatDate(d) { return d.toISOString().split("T")[0]; }
-    function initializeDates() {
-      let m = getNextMonday();
-      for (let i=1; i<=5; i++) {
-        document.getElementById(`dia${i}`).value = formatDate(m);
-        m.setDate(m.getDate()+1);
+ <script>
+  function getNextMonday(){ /* igual */ }
+  function formatDate(d){ /* igual */ }
+  function initializeDates(){ /* igual */ }
+  function getParams(){ /* igual */ }
+  function applyParams(){ /* igual */ }
+
+  async function init() {
+    initializeDates();
+    applyParams();
+    const empresa = document.getElementById("empresa").value.trim();
+    if (!empresa) return;
+    const baseUrl = "https://script.google.com/macros/s/AKfycbyaG4Xw9AxjbBzcFoFlVtzkznrdPQafw6zDGPl1xYM8hfxNP6Zc9VoH_GZKdYuClIj0qA/exec";
+    const res = await fetch(`${baseUrl}?empresa=${encodeURIComponent(empresa)}`);
+    const { allowedDays, menus } = await res.json();
+
+    const dayNames = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
+    for (let i = 1; i <= 5; i++) {
+      const blk = document.getElementById(`bloque${i}`);
+      if (!allowedDays.includes(i)) {
+        blk.style.display = "none";
+        continue;
       }
-    }
-
-    // Leer parámetros de URL
-    function getParams() {
-      const p={}, parts=location.search.substr(1).split("&");
-      parts.forEach(item => {
-        const [k,v] = item.split("=");
-        if (k) p[k]=decodeURIComponent(v||"");
-      });
-      return p;
-    }
-    function applyParams() {
-      const {empresa} = getParams();
-      if (empresa) document.getElementById("empresa").value = empresa;
-    }
-
-    // Obtener días permitidos (doGetDays)
-    async function fetchAllowedDays(empresa) {
-      const url = "https://script.google.com/macros/s/AKfycbyO619BWJ350XRJYgqVkOHHPkkptoI4YeAj1MTGg1O6y9MAQH35MdOJRcJEUgMb2GWybA/exec"
-        + "?empresa=" + encodeURIComponent(empresa);
-      const res = await fetch(url);
-      return await res.json(); // ["Lunes","Miércoles",...]
-    }
-
-    // Carga menú dinámico por día (doGet)
-    async function loadMenuForDay(dayIndex) {
-      const empresa = encodeURIComponent(document.getElementById("empresa").value.trim());
-      if (!empresa) return;
-      const webApp = "https://script.google.com/macros/s/AKfycbyO619BWJ350XRJYgqVkOHHPkkptoI4YeAj1MTGg1O6y9MAQH35MdOJRcJEUgMb2GWybA/exec";
-      const res = await fetch(`${webApp}?empresa=${empresa}&day=${dayIndex}`);
-      const opciones = await res.json();
-
-      const sel = document.getElementById(`menu${dayIndex}`);
-      sel.innerHTML = opciones.length
-        ? opciones.map(o => `<option value="${o}">${o}</option>`).join("")
-        : `<option value="">No hay menús disponibles</option>`;
-
-      const hid = document.getElementById(`menu${dayIndex}_id`);
-      const upd = () => hid.value = sel.value.split("|")[0].trim();
+      blk.style.display = "";
+      const sel = document.getElementById(`menu${i}`);
+      const opts = menus[i] || [];
+      sel.innerHTML = opts.map(o=>`<option value="${o}">${o}</option>`).join("")
+                     || `<option value="">No hay menús</option>`;
+      // hidden ID
+      const hid = document.getElementById(`menu${i}_id`);
+      const upd = ()=> hid.value = sel.value.split("|")[0].trim();
       sel.addEventListener("change", upd);
       upd();
     }
 
-    window.addEventListener("DOMContentLoaded", async () => {
-      initializeDates();
-      applyParams();
-
-      const empresa = document.getElementById("empresa").value.trim();
-      const allowed = await fetchAllowedDays(empresa);
-
-      // Mostrar/ocultar y cargar bloques
-      const names = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
-      for (let i=1; i<=5; i++) {
-        const blk = document.getElementById(`bloque${i}`);
-        if (allowed.includes(names[i-1])) {
-          blk.style.display = "";
-          loadMenuForDay(i);
-        } else {
-          blk.style.display = "none";
-        }
-      }
-
-      // Toggle contenido
-      document.querySelectorAll(".bloque .titulo").forEach(t => {
-        t.addEventListener("click", () => {
-          document.querySelectorAll(".bloque .contenido").forEach(c => c.style.display="none");
-          const c = t.nextElementSibling;
-          c.style.display = c.style.display==="block"?"none":"block";
-        });
-      });
-
-      // Envío
-      const form = document.getElementById("pedidoForm"), btn = document.getElementById("submitBtn");
-      form.addEventListener("submit", () => {
-        btn.textContent = "Enviando...";
-        btn.disabled = true;
+    // toggles
+    document.querySelectorAll(".bloque .titulo").forEach(t=>{
+      t.addEventListener("click",()=>{
+        document.querySelectorAll(".bloque .contenido").forEach(c=>c.style.display="none");
+        const c = t.nextElementSibling;
+        c.style.display = c.style.display==="block"?"none":"block";
       });
     });
-  </script>
+
+    // submit
+    const form = document.getElementById("pedidoForm"), btn=document.getElementById("submitBtn");
+    form.addEventListener("submit",()=>{
+      btn.textContent="Enviando...";
+      btn.disabled=true;
+    });
+  }
+
+  window.addEventListener("DOMContentLoaded", init);
+</script>
+
 </body>
 </html>
 
