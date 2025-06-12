@@ -109,7 +109,7 @@
           <input type="date" id="dia1" name="dia1" readonly>
 
           <label for="menu1">Menú:</label>
-          <select id="menu1" name="menu1" required></select>
+          <select id="menu1" name="menu1" ></select>
           <input type="hidden" id="menu1_id" name="menu1_id">
 
           <label for="cantidad1">Cantidad:</label>
@@ -128,7 +128,7 @@
           <input type="date" id="dia2" name="dia2" readonly>
 
           <label for="menu2">Menú:</label>
-          <select id="menu2" name="menu2" required></select>
+          <select id="menu2" name="menu2" ></select>
           <input type="hidden" id="menu2_id" name="menu2_id">
 
           <label for="cantidad2">Cantidad:</label>
@@ -147,7 +147,7 @@
           <input type="date" id="dia3" name="dia3" readonly>
 
           <label for="menu3">Menú:</label>
-          <select id="menu3" name="menu3" required></select>
+          <select id="menu3" name="menu3" ></select>
           <input type="hidden" id="menu3_id" name="menu3_id">
 
           <label for="cantidad3">Cantidad:</label>
@@ -166,7 +166,7 @@
           <input type="date" id="dia4" name="dia4" readonly>
 
           <label for="menu4">Menú:</label>
-          <select id="menu4" name="menu4" required></select>
+          <select id="menu4" name="menu4" ></select>
           <input type="hidden" id="menu4_id" name="menu4_id">
 
           <label for="cantidad4">Cantidad:</label>
@@ -185,7 +185,7 @@
           <input type="date" id="dia5" name="dia5" readonly>
 
           <label for="menu5">Menú:</label>
-          <select id="menu5" name="menu5" required></select>
+          <select id="menu5" name="menu5" ></select>
           <input type="hidden" id="menu5_id" name="menu5_id">
 
           <label for="cantidad5">Cantidad:</label>
@@ -290,28 +290,35 @@
 
   // Tu función original para traer menús
   async function loadMenuForDay(dayIndex) {
-    const empresa = encodeURIComponent(
-      document.getElementById("empresa").value.trim()
-    );
-    if (!empresa) return;
-    const url = `${webAppBase}?empresa=${empresa}&day=${dayIndex}`;
-    try {
-      const res = await fetch(url);
-      const opciones = await res.json();
-      const select = document.getElementById(`menu${dayIndex}`);
-      select.innerHTML = opciones.length
-        ? opciones.map(o => `<option value="${o}">${o}</option>`).join("")
-        : `<option value="">No hay menús disponibles</option>`;
-      const hidden = document.getElementById(`menu${dayIndex}_id`);
-      const updateId = () => {
-        hidden.value = select.value.split("|")[0].trim();
-      };
-      select.addEventListener("change", updateId);
-      updateId();
-    } catch (err) {
-      console.error("Error cargando menús día " + dayIndex, err);
-    }
+  const empresa = document.getElementById("empresa").value.trim();
+  if (!empresa) return;
+  const url = `${webAppBase}?empresa=${encodeURIComponent(empresa)}&day=${dayIndex}`;
+  try {
+    const res = await fetch(url);
+    const opciones = await res.json(); // ["M1 | Descripción", "M2 | Otra…", …]
+
+    const select = document.getElementById(`menu${dayIndex}`);
+    // Opción inicial vacía
+    const emptyOption = '<option value="">-- Seleccione menú --</option>';
+
+    select.innerHTML = opciones.length
+      ? emptyOption + opciones.map(o => `<option value="${o}">${o}</option>`).join("")
+      : '<option value="">No hay menús disponibles</option>';
+
+    const hidden = document.getElementById(`menu${dayIndex}_id`);
+    const updateId = () => {
+      const [id] = select.value.split("|").map(s => s.trim());
+      hidden.value = id || "";
+    };
+    select.addEventListener("change", updateId);
+    // Inicializar hidden vacío
+    hidden.value = "";
+
+  } catch (err) {
+    console.error("Error cargando menús día " + dayIndex, err);
   }
+}
+
 
   window.addEventListener("DOMContentLoaded", async () => {
     initializeDates();
